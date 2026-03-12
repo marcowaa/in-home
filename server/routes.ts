@@ -14,6 +14,8 @@ import {
 } from "@shared/schema";
 import { requireApiKey, generateApiKey, generateSecretKey, API_PERMISSIONS, PERMISSION_LABELS } from "./apiMiddleware";
 import { triggerWebhook, WEBHOOK_EVENTS, WEBHOOK_EVENT_LABELS } from "./webhooks";
+import connectPgSimple from "connect-pg-simple";
+import { pool } from "./db";
 import { generateDbName, createTenantDatabase, initializeTenantDatabase, dropTenantDatabase } from "./tenantDb";
 
 // Multer configuration for local file uploads
@@ -113,17 +115,24 @@ function generateReferralCode(): string {
 }
 
 export async function registerRoutes(server: Server, app: Express): Promise<void> {
+  const PgSession = connectPgSimple(session);
+
   // Session middleware
   app.use(
     session({
+      store: new PgSession({
+        pool: pool,
+        tableName: "user_sessions",
+        createTableIfMissing: true,
+      }),
       secret: process.env.SESSION_SECRET || "mandoobeen-system-secret-key",
-      resave: true,
+      resave: false,
       saveUninitialized: false,
       cookie: {
-        secure: false,
+        secure: process.env.NODE_ENV === "production", // Use secure cookies in production
         httpOnly: true,
         sameSite: "lax",
-        maxAge: 24 * 60 * 60 * 1000, // 24 hours
+        maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
       },
     })
   );
