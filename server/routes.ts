@@ -125,7 +125,7 @@ export async function registerRoutes(server: Server, app: Express): Promise<void
         tableName: "user_sessions",
         createTableIfMissing: true,
       }),
-      secret: process.env.SESSION_SECRET || "mandoobeen-system-secret-key",
+      secret: process.env.SESSION_SECRET!,
       resave: false,
       saveUninitialized: false,
       cookie: {
@@ -348,8 +348,7 @@ export async function registerRoutes(server: Server, app: Express): Promise<void
         referralCode: newReferralCode,
         referredBy: referrerId,
       } as any);
-      // Admin will send this code manually via WhatsApp
-      console.log(`[VERIFICATION] Driver ${name} (${whatsappPhone}) code: ${verificationCode}`);
+      // Admin will see the code in notifications panel
       // Notify admin with verification code
       storage.createAdminNotification({
         type: "driver_registration",

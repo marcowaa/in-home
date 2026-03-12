@@ -30,7 +30,7 @@ COPY package-lock.json* ./
 
 # Install production dependencies only + drizzle-kit for schema push
 RUN npm install --omit=dev --ignore-scripts=false && \
-    npm install drizzle-kit tsx
+  npm install drizzle-kit tsx
 
 # Copy built dist folder from builder (contains compiled server and client)
 COPY --from=builder /app/dist ./dist
