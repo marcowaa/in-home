@@ -149,15 +149,11 @@ export async function registerRoutes(server: Server, app: Express): Promise<void
     next();
   });
 
-  // Initialize default admin if not exists, or reset password
+  // Initialize default admin if not exists (do NOT reset password on every restart)
   const existingAdmin = await storage.getAdminByUsername("admin");
   if (!existingAdmin) {
     const hashedPassword = await bcrypt.hash("admin123", 10);
     await storage.createAdmin({ username: "admin", password: hashedPassword });
-  } else {
-    // Reset password to admin123
-    const hashedPassword = await bcrypt.hash("admin123", 10);
-    await storage.updateAdminPassword(existingAdmin.id, hashedPassword);
   }
 
   // Initialize default settings if not exists

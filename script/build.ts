@@ -10,6 +10,7 @@ const allowlist = [
   "connect-pg-simple",
   "cors",
   "date-fns",
+  "dotenv",
   "drizzle-orm",
   "drizzle-zod",
   "express",
@@ -32,6 +33,9 @@ const allowlist = [
   "zod-validation-error",
 ];
 
+// Native modules that MUST remain external (cannot be bundled by esbuild)
+const forceExternal = ["bcrypt"];
+
 async function buildAll() {
   await rm("dist", { recursive: true, force: true });
 
@@ -45,6 +49,8 @@ async function buildAll() {
     ...Object.keys(pkg.devDependencies || {}),
   ];
   const externals = allDeps.filter((dep) => !allowlist.includes(dep));
+  // Ensure native modules are always external even if in allowlist
+  const finalExternals = [...new Set([...externals, ...forceExternal])];
 
   await esbuild({
     entryPoints: ["server/index.ts"],
@@ -56,7 +62,7 @@ async function buildAll() {
       "process.env.NODE_ENV": '"production"',
     },
     minify: true,
-    external: externals,
+    external: finalExternals,
     logLevel: "info",
   });
 }

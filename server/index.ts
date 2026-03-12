@@ -1,15 +1,15 @@
+import dotenv from "dotenv";
+// Load environment variables BEFORE any other imports that use them
+dotenv.config();
+
 import express, { type Request, Response, NextFunction } from "express";
 import path from "path";
-import dotenv from "dotenv";
 import { registerRoutes } from "./routes";
 import { serveStatic } from "./static";
 import { createServer } from "http";
 
 const app = express();
 const httpServer = createServer(app);
-
-// Load environment variables from .env file
-dotenv.config();
 
 declare module "http" {
   interface IncomingMessage {
@@ -74,6 +74,11 @@ app.use((req, res, next) => {
     res.status(status).json({ message });
     throw err;
   });
+
+  // Trust proxy for secure cookies behind Nginx/reverse proxy
+  if (process.env.NODE_ENV === "production") {
+    app.set("trust proxy", 1);
+  }
 
   // importantly only setup vite in development and after
   // setting up all the other routes so the catch-all route
